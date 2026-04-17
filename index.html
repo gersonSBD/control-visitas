@@ -1,850 +1,337 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de Visitas</title>
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="Vehicle Branch Geofence PWA">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f0f11">
-<meta name="mobile-web-app-capable" content="yes">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0f0f11;
-    --surface: #18181c;
-    --surface2: #222228;
-    --accent: #e8ff47;
-    --accent2: #47d4ff;
-    --danger: #ff4f4f;
-    --text: #f0f0f0;
-    --muted: #888;
-    --border: #2e2e36;
-    --radius: 12px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    padding: 0 0 80px;
-  }
-  /* HEADER */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 20px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo { display: flex; flex-direction: column; }
-  .logo span:first-child { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-  .logo span:last-child { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
-  .plate-badge {
-    background: var(--accent);
-    color: #000;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    letter-spacing: 2px;
-  }
-
-  /* NAV TABS */
-  .tabs {
-    display: flex;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 16px;
-    gap: 4px;
-  }
-  .tab {
-    padding: 12px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .2s;
-    white-space: nowrap;
-  }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* PAGES */
-  .page { display: none; padding: 20px 16px; }
-  .page.active { display: block; }
-
-  /* CARDS */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 14px;
-  }
-  .card-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 14px;
-  }
-
-  /* STATUS INDICATOR */
-  .status-block {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px;
-    background: var(--surface2);
-    border-radius: 10px;
-    margin-bottom: 16px;
-  }
-  .status-dot {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-    position: relative;
-  }
-  .status-dot.active {
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 8px var(--accent); }
-    50% { box-shadow: 0 0 20px var(--accent); }
-  }
-  .status-info { flex: 1; }
-  .status-info strong { font-size: 15px; display: block; }
-  .status-info span { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
-
-  /* INPUTS */
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-  input, select, textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    padding: 12px 14px;
-    outline: none;
-    margin-bottom: 14px;
-    transition: border-color .2s;
-  }
-  input:focus, select:focus { border-color: var(--accent); }
-  select option { background: var(--surface2); }
-
-  /* BUTTONS */
-  .btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all .15s;
-    letter-spacing: 0.5px;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
-  .btn-primary:active { transform: scale(0.97); background: #d4e83c; }
-  .btn-danger {
-    background: var(--danger);
-    color: #fff;
-  }
-  .btn-danger:active { transform: scale(0.97); }
-  .btn-outline {
-    background: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--text);
-  }
-  .btn-outline:active { background: var(--surface2); }
-  .btn + .btn { margin-top: 10px; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* TIMELINE */
-  .timeline { position: relative; padding-left: 24px; }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 7px; top: 8px; bottom: 8px;
-    width: 2px;
-    background: var(--border);
-  }
-  .tl-item {
-    position: relative;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .tl-item:last-child { border-bottom: none; }
-  .tl-dot {
-    position: absolute;
-    left: -20px;
-    top: 16px;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--surface2);
-    border: 2px solid var(--muted);
-  }
-  .tl-dot.entrada { border-color: var(--accent); background: var(--accent); }
-  .tl-dot.salida { border-color: var(--accent2); background: var(--accent2); }
-  .tl-dot.active-now { border-color: var(--accent); background: var(--accent); animation: pulse 2s infinite; }
-  .tl-sucursal { font-size: 14px; font-weight: 700; }
-  .tl-meta { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 3px; }
-  .tl-dur { font-size: 11px; color: var(--accent2); margin-top: 2px; }
-
-  /* STATS ROW */
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .stat-box {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-  .stat-val { font-size: 22px; font-weight: 800; color: var(--accent); font-family: 'Space Mono', monospace; }
-  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
-
-  /* REPORT TABLE */
-  .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .report-table th { background: var(--surface2); color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; text-align: left; }
-  .report-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .report-table tr:last-child td { border-bottom: none; }
-
-  /* WEEK SELECTOR */
-  .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .week-nav button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-  .week-label { font-size: 13px; font-weight: 700; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--accent);
-    color: #000;
-    padding: 12px 22px;
-    border-radius: 50px;
-    font-size: 13px;
-    font-weight: 700;
-    opacity: 0;
-    transition: all .3s;
-    z-index: 999;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* EMPTY */
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
-  .empty-icon { font-size: 36px; margin-bottom: 10px; }
-
-  /* ROUTE PILLS */
-  .route-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .route-pill {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-family: 'Space Mono', monospace;
-  }
-  .route-pill.highlight { border-color: var(--accent); color: var(--accent); }
-
-  /* SUCURSAL MANAGE */
-  .suc-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .suc-item:last-child { border-bottom: none; }
-  .suc-del { background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; padding: 4px 8px; }
-
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-</style>
+<title>VisitControl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-
-<header>
-  <div class="logo">
-    <span>Control de Visitas</span>
-    <span id="headerDate">—</span>
-  </div>
-  <div class="plate-badge" id="plateBadge">—</div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" onclick="showTab('registro')">📍 Registro</div>
-  <div class="tab" onclick="showTab('hoy')">📋 Hoy</div>
-  <div class="tab" onclick="showTab('reporte')">📊 Reporte</div>
-  <div class="tab" onclick="showTab('config')">⚙️ Config</div>
-</div>
-
-<!-- PAGE: REGISTRO -->
-<div id="page-registro" class="page active">
-  <div id="statusBlock" class="status-block">
-    <div class="status-dot" id="statusDot"></div>
-    <div class="status-info">
-      <strong id="statusTitle">Sin visita activa</strong>
-      <span id="statusSub">Registra tu entrada a una sucursal</span>
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">Visit<span>Control</span></div>
+    <div class="tracking-badge" id="trackingBadge" onclick="toggleTracking()">
+      <div class="dot"></div>
+      <span id="trackingLabel">INACTIVO</span>
     </div>
   </div>
 
-  <div class="card" id="entradaCard">
-    <div class="card-title">Registrar Entrada</div>
-    <label>Sucursal</label>
-    <select id="sucursalSelect">
-      <option value="">Selecciona sucursal...</option>
-    </select>
-    <label>Observaciones (opcional)</label>
-    <textarea id="obsEntrada" rows="2" placeholder="Ej: Reunión con gerente, entrega de documentos..."></textarea>
-    <button class="btn btn-primary" onclick="registrarEntrada()">▶ Registrar Entrada</button>
+  <div class="content" id="contentArea">
+    <!-- DASHBOARD VIEW -->
+    <div class="view active" id="view-dashboard">
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-today">0</div>
+          <div class="stat-lbl">Hoy</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-week">0</div>
+          <div class="stat-lbl">Semana</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-hours">0h</div>
+          <div class="stat-lbl">Tiempo</div>
+        </div>
+      </div>
+
+      <div class="card accent-corner" id="activeSessionCard" style="display:none;">
+        <div class="card-title">Visita Activa</div>
+        <div id="activeSessionContent"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sucursales Cercanas</div>
+        <div id="nearbyBranches">
+          <div class="empty"><div class="empty-icon">ðŸ“</div>Activa el tracking para detectar sucursales</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Eventos Recientes</div>
+        <button class="btn btn-ghost btn-sm" onclick="showModal('manualEventModal')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Manual
+        </button>
+      </div>
+      <div id="recentEvents">
+        <div class="empty"><div class="empty-icon">ðŸ—“</div>Sin eventos registrados</div>
+      </div>
+    </div>
+
+    <!-- BRANCHES VIEW -->
+    <div class="view" id="view-branches">
+      <div class="section-header">
+        <div class="section-title">Sucursales</div>
+        <button class="btn btn-primary btn-sm" onclick="showModal('branchModal')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva
+        </button>
+      </div>
+      <div id="branchList">
+        <div class="empty"><div class="empty-icon">ðŸ¢</div>No hay sucursales. Agrega la primera.</div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div class="view" id="view-history">
+      <div class="section-header">
+        <div class="section-title">Historial</div>
+        <select class="form-select" style="width:auto;padding:6px 10px;font-size:12px;" onchange="filterHistory(this.value)">
+          <option value="3">3 dÃ­as</option>
+          <option value="7" selected>7 dÃ­as</option>
+          <option value="30">30 dÃ­as</option>
+        </select>
+      </div>
+      <div id="historyList">
+        <div class="empty"><div class="empty-icon">ðŸ“‹</div>Sin visitas registradas</div>
+      </div>
+    </div>
+
+    <!-- REPORTS VIEW -->
+    <div class="view" id="view-reports">
+      <div class="card">
+        <div class="card-title">Generar Reporte</div>
+        <div class="flex-col gap-8" style="gap:10px;">
+          <div class="form-group">
+            <div class="form-label">PerÃ­odo</div>
+            <select class="form-select" id="reportRange">
+              <option value="3">Ãšltimos 3 dÃ­as</option>
+              <option value="7" selected>Ãšltima semana</option>
+              <option value="30">Ãšltimo mes</option>
+            </select>
+          </div>
+          <div class="flex gap-8" style="gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="generateWhatsApp()" style="flex:1">
+              <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              WhatsApp
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="exportJSON()" style="flex:1">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              JSON
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Tiempo por Sucursal</div>
+        <div id="chartByBranch"><div class="empty" style="padding:16px 0">Sin datos</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Vista Previa WhatsApp</div>
+        <div class="report-preview" id="whatsappPreview">Genera un reporte para ver la vista previa...</div>
+        <div class="flex gap-8 mt-8" style="gap:8px;margin-top:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="copyReport()" style="flex:1">Copiar</button>
+          <button class="btn btn-success btn-sm" onclick="sendWhatsApp()" style="flex:1">Abrir WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div class="view" id="view-settings">
+      <div class="card">
+        <div class="card-title">GeolocalizaciÃ³n</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Tracking AutomÃ¡tico</div>
+            <div class="setting-desc">Detecta entradas y salidas</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="settingTracking" onchange="saveSettings()"><div class="toggle-slider"></div></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Radio Entrada</div>
+            <div class="setting-desc">Metros para detectar entrada</div>
+          </div>
+          <input type="number" class="form-input" id="settingEntryRadius" value="80" style="width:80px;text-align:right;" onchange="saveSettings()">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Radio Salida</div>
+            <div class="setting-desc">Metros para detectar salida</div>
+          </div>
+          <input type="number" class="form-input" id="settingExitRadius" value="110" style="width:80px;text-align:right;" onchange="saveSettings()">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">PrecisiÃ³n MÃ­nima</div>
+            <div class="setting-desc">Descartar lecturas imprecisas (m)</div>
+          </div>
+          <input type="number" class="form-input" id="settingMinAccuracy" value="50" style="width:80px;text-align:right;" onchange="saveSettings()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Reportes</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">TelÃ©fono Contacto</div>
+            <div class="setting-desc">Para envÃ­o por WhatsApp</div>
+          </div>
+        </div>
+        <input type="tel" class="form-input" id="settingPhone" placeholder="+549..." onchange="saveSettings()">
+      </div>
+
+      <div class="card">
+        <div class="card-title">Datos</div>
+        <div class="setting-row" onclick="exportJSON()" style="cursor:pointer;">
+          <div class="setting-info">
+            <div class="setting-name">Exportar JSON</div>
+            <div class="setting-desc">Backup completo de datos</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="setting-row" onclick="confirmClearData()" style="cursor:pointer;">
+          <div class="setting-info">
+            <div class="setting-name" style="color:var(--danger)">Borrar Todos los Datos</div>
+            <div class="setting-desc">Elimina sucursales y eventos</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:var(--text3);font-size:11px;font-family:var(--mono);padding:8px 0;">
+        VisitControl v1.0 Â· Offline-first PWA
+      </div>
+    </div>
   </div>
 
-  <div class="card" id="salidaCard" style="display:none">
-    <div class="card-title">Registrar Salida</div>
-    <label>Observaciones (opcional)</label>
-    <textarea id="obsSalida" rows="2" placeholder="Ej: Tarea completada, pendiente seguimiento..."></textarea>
-    <button class="btn btn-danger" onclick="registrarSalida()">⏹ Registrar Salida</button>
-  </div>
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-item active" onclick="showView('dashboard', this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Inicio
+    </button>
+    <button class="nav-item" onclick="showView('branches', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Sucursales
+    </button>
+    <button class="nav-item" onclick="showView('history', this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Historial
+    </button>
+    <button class="nav-item" onclick="showView('reports', this); buildReports()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reportes
+    </button>
+    <button class="nav-item" onclick="showView('settings', this); loadSettings()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Config
+    </button>
+  </nav>
 </div>
 
-<!-- PAGE: HOY -->
-<div id="page-hoy" class="page">
-  <div class="stats-row" id="statsHoy">
-    <div class="stat-box"><div class="stat-val" id="statVisitas">0</div><div class="stat-lbl">Sucursales</div></div>
-    <div class="stat-box"><div class="stat-val" id="statHoras">0h</div><div class="stat-lbl">Horas hoy</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Ruta de hoy</div>
-    <div class="route-row" id="rutaHoy"><span style="color:var(--muted);font-size:12px">Sin visitas aún</span></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Actividad del día</div>
-    <div class="timeline" id="timelineHoy">
-      <div class="empty"><div class="empty-icon">🗺️</div>No hay registros hoy</div>
+<!-- MODALS -->
+<div class="modal-overlay" id="branchModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="branchModalTitle">Nueva Sucursal</div>
+    <div class="flex-col" style="gap:12px;">
+      <input type="hidden" id="branchId">
+      <div class="form-group">
+        <div class="form-label">Nombre</div>
+        <input type="text" class="form-input" id="branchName" placeholder="Ej: Sucursal Centro">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <div class="form-label">Latitud</div>
+          <input type="number" class="form-input" id="branchLat" placeholder="-34.6037" step="0.0001">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Longitud</div>
+          <input type="number" class="form-input" id="branchLng" placeholder="-58.3816" step="0.0001">
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="useCurrentLocation()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/></svg>
+        Usar mi ubicaciÃ³n actual
+      </button>
+      <div class="form-grid">
+        <div class="form-group">
+          <div class="form-label">Radio Entrada (m)</div>
+          <input type="number" class="form-input" id="branchEntryRadius" value="80">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Radio Salida (m)</div>
+          <input type="number" class="form-input" id="branchExitRadius" value="110">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Prioridad</div>
+        <input type="number" class="form-input" id="branchPriority" value="1" min="1" max="99">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('branchModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBranch()">Guardar</button>
     </div>
   </div>
 </div>
 
-<!-- PAGE: REPORTE -->
-<div id="page-reporte" class="page">
-  <div class="week-nav">
-    <button onclick="cambiarSemana(-1)">‹</button>
-    <span class="week-label" id="weekLabel">—</span>
-    <button onclick="cambiarSemana(1)">›</button>
+<div class="modal-overlay" id="manualEventModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Registrar Evento Manual</div>
+    <div class="flex-col" style="gap:12px;">
+      <div class="form-group">
+        <div class="form-label">Sucursal</div>
+        <select class="form-select" id="manualBranchId"></select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Tipo</div>
+        <div class="form-row">
+          <button class="btn btn-success btn-sm" id="btnEntry" onclick="selectEventType('ENTRY')" style="flex:1">â–¶ Entrada</button>
+          <button class="btn btn-ghost btn-sm" id="btnExit" onclick="selectEventType('EXIT')" style="flex:1">â–  Salida</button>
+        </div>
+        <input type="hidden" id="manualEventType" value="ENTRY">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Fecha y Hora</div>
+        <input type="datetime-local" class="form-input" id="manualTimestamp">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Observaciones</div>
+        <textarea class="form-textarea" id="manualObservation" placeholder="Opcional..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('manualEventModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveManualEvent()">Registrar</button>
+    </div>
   </div>
-
-  <div class="stats-row">
-    <div class="stat-box"><div class="stat-val" id="repVisitas">0</div><div class="stat-lbl">Visitas</div></div>
-    <div class="stat-box"><div class="stat-val" id="repHoras">0h</div><div class="stat-lbl">Horas</div></div>
-  </div>
-  <div class="stats-row">
-    <div class="stat-box"><div class="stat-val" id="repDias">0</div><div class="stat-lbl">Días activos</div></div>
-    <div class="stat-box"><div class="stat-val" id="repSucs">0</div><div class="stat-lbl">Sucursales</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Detalle semanal</div>
-    <div id="repDetalle"><div class="empty"><div class="empty-icon">📭</div>Sin datos esta semana</div></div>
-  </div>
-
-  <button class="btn btn-primary" onclick="generarPDF()">⬇ Descargar PDF Semanal</button>
-  <button class="btn btn-outline" onclick="copiarReporte()">📋 Copiar resumen para email</button>
 </div>
 
-<!-- PAGE: CONFIG -->
-<div id="page-config" class="page">
-  <div class="card">
-    <div class="card-title">Mi vehículo</div>
-    <label>Placa</label>
-    <input id="cfgPlaca" type="text" placeholder="Ej: ABC-123" style="text-transform:uppercase; font-family:'Space Mono',monospace; font-size:18px; font-weight:700; letter-spacing:3px;">
-    <label>Nombre del conductor</label>
-    <input id="cfgNombre" type="text" placeholder="Tu nombre">
-    <button class="btn btn-primary" onclick="guardarConfig()">Guardar</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Sucursales</div>
-    <div id="listaSucursales"></div>
-    <div class="divider"></div>
-    <label>Agregar sucursal</label>
-    <input id="nuevaSucursal" type="text" placeholder="Nombre de la sucursal">
-    <button class="btn btn-outline" onclick="agregarSucursal()">+ Agregar</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Datos</div>
-    <button class="btn btn-outline" onclick="exportarDatos()">💾 Exportar datos (JSON)</button>
-    <button class="btn btn-outline" onclick="importarDatos()">📂 Importar datos</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="procesarImport(event)">
-    <div class="divider"></div>
-    <button class="btn" style="background:var(--surface2);color:var(--danger);border:1px solid var(--danger)" onclick="limpiarTodo()">🗑 Borrar todos los registros</button>
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="confirmTitle">Confirmar</div>
+    <p id="confirmText" style="color:var(--text2);font-size:14px;margin-bottom:4px;"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn btn-danger" id="confirmBtn">Confirmar</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
-let state = {
-  config: { placa: '', nombre: '' },
-  sucursales: ['Sucursal Central', 'Sucursal Norte', 'Sucursal Sur'],
-  registros: [],       // { id, fecha, sucursal, entrada, salida, obsEntrada, obsSalida }
-  activo: null,        // registro abierto
-  semanaOffset: 0
-};
-
-function cargar() {
-  const d = localStorage.getItem('cv_state');
-  if (d) {
-    try {
-      const parsed = JSON.parse(d);
-      state = { ...state, ...parsed };
-    } catch(e) {}
-  }
-}
-function guardar() {
-  localStorage.setItem('cv_state', JSON.stringify(state));
-}
-cargar();
-
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-function now() { return new Date().toISOString(); }
-function fmt(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
-}
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('es', { weekday:'short', day:'numeric', month:'short' });
-}
-function durMin(a, b) {
-  if (!a || !b) return 0;
-  return Math.round((new Date(b) - new Date(a)) / 60000);
-}
-function fmtDur(min) {
-  if (min < 60) return `${min}m`;
-  const h = Math.floor(min / 60), m = min % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-function getWeekRange(offset = 0) {
-  const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(today.setDate(diff + offset * 7));
-  monday.setHours(0,0,0,0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23,59,59,999);
-  return { start: monday, end: sunday };
-}
-function isoDate(d) { return d.toISOString().split('T')[0]; }
-
-function toast(msg, dur = 2500) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
-}
-
-// ─── TABS ────────────────────────────────────────────────────────────────────
-function showTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('page-' + tab).classList.add('active');
-  if (tab === 'hoy') renderHoy();
-  if (tab === 'reporte') renderReporte();
-  if (tab === 'config') renderConfig();
-}
-
-// ─── REGISTRO ────────────────────────────────────────────────────────────────
-function renderRegistro() {
-  // Date header
-  document.getElementById('headerDate').textContent =
-    new Date().toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
-  // Plate
-  document.getElementById('plateBadge').textContent = state.config.placa || 'SIN PLACA';
-  // Sucursales select
-  const sel = document.getElementById('sucursalSelect');
-  sel.innerHTML = '<option value="">Selecciona sucursal...</option>';
-  state.sucursales.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    sel.appendChild(o);
-  });
-  // Estado activo
-  if (state.activo) {
-    document.getElementById('statusDot').classList.add('active');
-    document.getElementById('statusTitle').textContent = '📍 En: ' + state.activo.sucursal;
-    document.getElementById('statusSub').textContent = 'Entrada: ' + fmt(state.activo.entrada);
-    document.getElementById('entradaCard').style.display = 'none';
-    document.getElementById('salidaCard').style.display = 'block';
-  } else {
-    document.getElementById('statusDot').classList.remove('active');
-    document.getElementById('statusTitle').textContent = 'Sin visita activa';
-    document.getElementById('statusSub').textContent = 'Registra tu entrada a una sucursal';
-    document.getElementById('entradaCard').style.display = 'block';
-    document.getElementById('salidaCard').style.display = 'none';
-  }
-}
-
-function registrarEntrada() {
-  const suc = document.getElementById('sucursalSelect').value;
-  if (!suc) { toast('Selecciona una sucursal'); return; }
-  if (!state.config.placa) { toast('⚠️ Configura tu placa primero'); showTab('config'); return; }
-  const reg = {
-    id: Date.now(),
-    fecha: isoDate(new Date()),
-    sucursal: suc,
-    entrada: now(),
-    salida: null,
-    obsEntrada: document.getElementById('obsEntrada').value.trim(),
-    obsSalida: ''
-  };
-  state.activo = reg;
-  state.registros.push(reg);
-  document.getElementById('obsEntrada').value = '';
-  guardar();
-  renderRegistro();
-  toast('✅ Entrada registrada en ' + suc);
-}
-
-function registrarSalida() {
-  if (!state.activo) return;
-  const idx = state.registros.findIndex(r => r.id === state.activo.id);
-  if (idx > -1) {
-    state.registros[idx].salida = now();
-    state.registros[idx].obsSalida = document.getElementById('obsSalida').value.trim();
-    const dur = durMin(state.registros[idx].entrada, state.registros[idx].salida);
-    toast('✅ Salida registrada — ' + fmtDur(dur) + ' en ' + state.activo.sucursal);
-  }
-  state.activo = null;
-  document.getElementById('obsSalida').value = '';
-  guardar();
-  renderRegistro();
-}
-
-// ─── HOY ─────────────────────────────────────────────────────────────────────
-function renderHoy() {
-  const hoy = isoDate(new Date());
-  const regsHoy = state.registros.filter(r => r.fecha === hoy);
-
-  // Stats
-  const completados = regsHoy.filter(r => r.salida);
-  const totalMin = completados.reduce((acc, r) => acc + durMin(r.entrada, r.salida), 0);
-  document.getElementById('statVisitas').textContent = regsHoy.length;
-  document.getElementById('statHoras').textContent = fmtDur(totalMin);
-
-  // Ruta
-  const rutaEl = document.getElementById('rutaHoy');
-  if (regsHoy.length === 0) {
-    rutaEl.innerHTML = '<span style="color:var(--muted);font-size:12px">Sin visitas aún</span>';
-  } else {
-    rutaEl.innerHTML = regsHoy.map((r, i) =>
-      `<span class="route-pill ${state.activo && r.id === state.activo.id ? 'highlight' : ''}">${r.sucursal}</span>`
-      + (i < regsHoy.length - 1 ? '<span style="color:var(--muted);align-self:center">→</span>' : '')
-    ).join('');
-  }
-
-  // Timeline
-  const tl = document.getElementById('timelineHoy');
-  if (regsHoy.length === 0) {
-    tl.innerHTML = '<div class="empty"><div class="empty-icon">🗺️</div>No hay registros hoy</div>';
-    return;
-  }
-  tl.innerHTML = regsHoy.map(r => {
-    const isActive = state.activo && r.id === state.activo.id;
-    const dur = r.salida ? fmtDur(durMin(r.entrada, r.salida)) : null;
-    return `
-      <div class="tl-item">
-        <div class="tl-dot ${isActive ? 'active-now' : r.salida ? 'salida' : 'entrada'}"></div>
-        <div class="tl-sucursal">${r.sucursal} ${isActive ? '<span style="font-size:10px;color:var(--accent)">● ACTIVO</span>' : ''}</div>
-        <div class="tl-meta">Entrada: ${fmt(r.entrada)}${r.salida ? '  ·  Salida: ' + fmt(r.salida) : ''}</div>
-        ${dur ? `<div class="tl-dur">⏱ ${dur}</div>` : ''}
-        ${r.obsEntrada ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">📝 ${r.obsEntrada}</div>` : ''}
-      </div>`;
-  }).join('');
-}
-
-// ─── REPORTE ─────────────────────────────────────────────────────────────────
-function cambiarSemana(d) {
-  state.semanaOffset += d;
-  if (state.semanaOffset > 0) state.semanaOffset = 0;
-  renderReporte();
-}
-
-function getRegsEnSemana() {
-  const { start, end } = getWeekRange(state.semanaOffset);
-  return state.registros.filter(r => {
-    const d = new Date(r.entrada);
-    return d >= start && d <= end;
-  });
-}
-
-function renderReporte() {
-  const { start, end } = getWeekRange(state.semanaOffset);
-  const label = start.toLocaleDateString('es', { day:'numeric', month:'short' }) +
-    ' – ' + end.toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' });
-  document.getElementById('weekLabel').textContent = label;
-
-  const regs = getRegsEnSemana();
-  const completados = regs.filter(r => r.salida);
-  const totalMin = completados.reduce((acc, r) => acc + durMin(r.entrada, r.salida), 0);
-  const dias = [...new Set(regs.map(r => r.fecha))];
-  const sucs = [...new Set(regs.map(r => r.sucursal))];
-
-  document.getElementById('repVisitas').textContent = regs.length;
-  document.getElementById('repHoras').textContent = fmtDur(totalMin);
-  document.getElementById('repDias').textContent = dias.length;
-  document.getElementById('repSucs').textContent = sucs.length;
-
-  const detEl = document.getElementById('repDetalle');
-  if (regs.length === 0) {
-    detEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Sin datos esta semana</div>';
-    return;
-  }
-
-  // Agrupar por día
-  let html = '';
-  dias.sort().forEach(fecha => {
-    const rDia = regs.filter(r => r.fecha === fecha);
-    const minDia = rDia.filter(r=>r.salida).reduce((a,r)=>a+durMin(r.entrada,r.salida),0);
-    const ruta = rDia.map(r=>r.sucursal).join(' → ');
-    html += `
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:12px;font-weight:700">${fmtDate(rDia[0].entrada)}</span>
-          <span style="font-size:11px;color:var(--accent);font-family:'Space Mono',monospace">${fmtDur(minDia)}</span>
-        </div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:6px">📍 ${ruta}</div>
-        <table class="report-table">
-          <tr><th>Sucursal</th><th>Entrada</th><th>Salida</th><th>Tiempo</th></tr>
-          ${rDia.map(r=>`<tr>
-            <td>${r.sucursal}</td>
-            <td>${fmt(r.entrada)}</td>
-            <td>${r.salida ? fmt(r.salida) : '<span style="color:var(--accent)">Activo</span>'}</td>
-            <td>${r.salida ? fmtDur(durMin(r.entrada,r.salida)) : '—'}</td>
-          </tr>`).join('')}
-        </table>
-      </div>`;
-  });
-  detEl.innerHTML = html;
-}
-
-function generarPDF() {
-  const { start, end } = getWeekRange(state.semanaOffset);
-  const regs = getRegsEnSemana();
-  const dias = [...new Set(regs.map(r => r.fecha))].sort();
-  const completados = regs.filter(r => r.salida);
-  const totalMin = completados.reduce((acc, r) => acc + durMin(r.entrada, r.salida), 0);
-
-  const semLabel = start.toLocaleDateString('es', { day:'numeric', month:'long' }) +
-    ' al ' + end.toLocaleDateString('es', { day:'numeric', month:'long', year:'numeric' });
-
-  let diasHTML = '';
-  dias.forEach(fecha => {
-    const rDia = regs.filter(r => r.fecha === fecha);
-    const minDia = rDia.filter(r=>r.salida).reduce((a,r)=>a+durMin(r.entrada,r.salida),0);
-    const ruta = rDia.map(r=>r.sucursal).join(' → ');
-    diasHTML += `
-      <div class="day-block">
-        <div class="day-header">
-          <span>${fmtDate(rDia[0].entrada).toUpperCase()}</span>
-          <span>Total: ${fmtDur(minDia)}</span>
-        </div>
-        <div class="ruta">Ruta: ${ruta}</div>
-        <table>
-          <tr><th>Sucursal</th><th>Entrada</th><th>Salida</th><th>Tiempo</th><th>Obs.</th></tr>
-          ${rDia.map(r=>`<tr>
-            <td>${r.sucursal}</td>
-            <td>${fmt(r.entrada)}</td>
-            <td>${r.salida ? fmt(r.salida) : 'En curso'}</td>
-            <td>${r.salida ? fmtDur(durMin(r.entrada,r.salida)) : '—'}</td>
-            <td>${r.obsSalida || r.obsEntrada || ''}</td>
-          </tr>`).join('')}
-        </table>
-      </div>`;
-  });
-
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <style>
-    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 0; padding: 30px; }
-    .header { border-bottom: 3px solid #111; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .header h1 { font-size: 22px; margin: 0 0 4px; }
-    .header p { margin: 2px 0; color: #444; font-size: 11px; }
-    .plate { font-size: 20px; font-weight: 900; letter-spacing: 4px; border: 2px solid #111; padding: 6px 14px; border-radius: 6px; }
-    .summary { display: flex; gap: 12px; margin-bottom: 20px; }
-    .summary-box { flex: 1; border: 1px solid #ddd; border-radius: 6px; padding: 12px; text-align: center; }
-    .summary-box .val { font-size: 24px; font-weight: 900; }
-    .summary-box .lbl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-    .day-block { margin-bottom: 18px; page-break-inside: avoid; }
-    .day-header { background: #f0f0f0; padding: 6px 10px; font-weight: 700; font-size: 11px; display: flex; justify-content: space-between; border-radius: 4px 4px 0 0; }
-    .ruta { font-size: 10px; color: #555; padding: 4px 10px; background: #f8f8f8; border-left: 1px solid #ddd; border-right: 1px solid #ddd; }
-    table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; border-top: none; }
-    th { background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
-    td { padding: 7px 8px; border-bottom: 1px solid #eee; font-size: 11px; }
-    tr:last-child td { border-bottom: none; }
-    .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 12px; font-size: 10px; color: #888; display: flex; justify-content: space-between; }
-  </style></head><body>
-  <div class="header">
-    <div>
-      <h1>Reporte Semanal de Visitas</h1>
-      <p>Semana: ${semLabel}</p>
-      <p>Conductor: ${state.config.nombre || 'N/D'}</p>
-      <p>Generado: ${new Date().toLocaleString('es')}</p>
-    </div>
-    <div class="plate">${state.config.placa || '---'}</div>
-  </div>
-  <div class="summary">
-    <div class="summary-box"><div class="val">${regs.length}</div><div class="lbl">Visitas</div></div>
-    <div class="summary-box"><div class="val">${fmtDur(totalMin)}</div><div class="lbl">Horas trabajadas</div></div>
-    <div class="summary-box"><div class="val">${dias.length}</div><div class="lbl">Días activos</div></div>
-    <div class="summary-box"><div class="val">${[...new Set(regs.map(r=>r.sucursal))].length}</div><div class="lbl">Sucursales</div></div>
-  </div>
-  ${diasHTML.length ? diasHTML : '<p style="color:#888;text-align:center;padding:30px">Sin registros esta semana</p>'}
-  <div class="footer">
-    <span>Control de Visitas — ${state.config.placa || ''}</span>
-    <span>Página 1</span>
-  </div>
-  <script>window.onload=()=>{window.print();}<\/script>
-  </body></html>`;
-
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-}
-
-function copiarReporte() {
-  const { start, end } = getWeekRange(state.semanaOffset);
-  const regs = getRegsEnSemana();
-  const dias = [...new Set(regs.map(r => r.fecha))].sort();
-  const totalMin = regs.filter(r=>r.salida).reduce((acc,r)=>acc+durMin(r.entrada,r.salida),0);
-  const semLabel = start.toLocaleDateString('es',{day:'numeric',month:'long'}) +
-    ' al ' + end.toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
-
-  let txt = `REPORTE SEMANAL DE VISITAS\n`;
-  txt += `Semana: ${semLabel}\n`;
-  txt += `Conductor: ${state.config.nombre || 'N/D'} | Placa: ${state.config.placa || 'N/D'}\n\n`;
-  txt += `RESUMEN\n`;
-  txt += `• Visitas: ${regs.length}  |  Horas: ${fmtDur(totalMin)}  |  Días: ${dias.length}\n\n`;
-  dias.forEach(fecha => {
-    const rDia = regs.filter(r=>r.fecha===fecha);
-    const minDia = rDia.filter(r=>r.salida).reduce((a,r)=>a+durMin(r.entrada,r.salida),0);
-    txt += `📅 ${fmtDate(rDia[0].entrada).toUpperCase()} (${fmtDur(minDia)})\n`;
-    txt += `   Ruta: ${rDia.map(r=>r.sucursal).join(' → ')}\n`;
-    rDia.forEach(r => {
-      txt += `   • ${r.sucursal}: ${fmt(r.entrada)} → ${r.salida?fmt(r.salida):'en curso'} (${r.salida?fmtDur(durMin(r.entrada,r.salida)):'activo'})\n`;
-    });
-    txt += '\n';
-  });
-  navigator.clipboard.writeText(txt).then(() => toast('📋 Copiado al portapapeles'));
-}
-
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
-function renderConfig() {
-  document.getElementById('cfgPlaca').value = state.config.placa || '';
-  document.getElementById('cfgNombre').value = state.config.nombre || '';
-  const lista = document.getElementById('listaSucursales');
-  if (state.sucursales.length === 0) {
-    lista.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Sin sucursales</div>';
-  } else {
-    lista.innerHTML = state.sucursales.map((s, i) => `
-      <div class="suc-item">
-        <span style="font-size:14px">${s}</span>
-        <button class="suc-del" onclick="borrarSucursal(${i})">✕</button>
-      </div>`).join('');
-  }
-}
-
-function guardarConfig() {
-  const p = document.getElementById('cfgPlaca').value.trim().toUpperCase();
-  const n = document.getElementById('cfgNombre').value.trim();
-  if (!p) { toast('Ingresa la placa'); return; }
-  state.config = { placa: p, nombre: n };
-  guardar();
-  renderRegistro();
-  toast('✅ Configuración guardada');
-}
-
-function agregarSucursal() {
-  const v = document.getElementById('nuevaSucursal').value.trim();
-  if (!v) return;
-  if (state.sucursales.includes(v)) { toast('Ya existe'); return; }
-  state.sucursales.push(v);
-  document.getElementById('nuevaSucursal').value = '';
-  guardar();
-  renderConfig();
-  renderRegistro();
-  toast('✅ Sucursal agregada');
-}
-
-function borrarSucursal(i) {
-  state.sucursales.splice(i, 1);
-  guardar();
-  renderConfig();
-  renderRegistro();
-}
-
-function exportarDatos() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `visitas_${isoDate(new Date())}.json`;
-  a.click();
-  toast('💾 Datos exportados');
-}
-
-function importarDatos() {
-  document.getElementById('importFile').click();
-}
-
-function procesarImport(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const d = JSON.parse(ev.target.result);
-      state = { ...state, ...d };
-      guardar();
-      renderRegistro();
-      renderConfig();
-      toast('✅ Datos importados');
-    } catch { toast('⚠️ Archivo inválido'); }
-  };
-  reader.readAsText(file);
-}
-
-function limpiarTodo() {
-  if (!confirm('¿Borrar todos los registros? Esta acción no se puede deshacer.')) return;
-  state.registros = [];
-  state.activo = null;
-  guardar();
-  renderRegistro();
-  toast('🗑 Registros eliminados');
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-renderRegistro();
-</script>
+<script src="scripts/core/db.js"></script>
+<script src="scripts/core/utils.js"></script>
+<script src="scripts/features/settings/settings.ui.js"></script>
+<script src="scripts/core/ui.js"></script>
+<script src="scripts/features/branches/branches.ui.js"></script>
+<script src="scripts/features/events/events.service.js"></script>
+<script src="scripts/features/tracking/geofence.engine.js"></script>
+<script src="scripts/features/history/history.ui.js"></script>
+<script src="scripts/features/reports/reports.service.js"></script>
+<script src="scripts/features/dashboard/dashboard.ui.js"></script>
+<script src="scripts/app/init.js"></script>
 </body>
 </html>
+
