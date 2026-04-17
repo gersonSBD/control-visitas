@@ -2,6 +2,14 @@
 // UI HELPERS
 // =============================================
 function showView(name, btn) {
+  if (name !== 'settings' && typeof isProfileConfigured === 'function' && !isProfileConfigured()) {
+    showToast('Configura nombre y placa primero', 'error');
+    const settingsBtn = document.querySelector('.nav-item[data-view="settings"]');
+    if (settingsBtn) {
+      showView('settings', settingsBtn);
+    }
+    return;
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');

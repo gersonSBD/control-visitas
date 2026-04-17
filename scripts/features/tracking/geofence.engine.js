@@ -16,6 +16,10 @@ function haversine(lat1, lng1, lat2, lng2) {
 }
 
 async function toggleTracking() {
+  if (typeof isProfileConfigured === 'function' && !isProfileConfigured()) {
+    showToast('Configura nombre y placa antes de activar tracking', 'error');
+    return;
+  }
   if (trackingActive) stopTracking();
   else await startTracking();
 }

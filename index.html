@@ -47,7 +47,7 @@
       <div class="card">
         <div class="card-title">Sucursales Cercanas</div>
         <div id="nearbyBranches">
-          <div class="empty"><div class="empty-icon">ðŸ“</div>Activa el tracking para detectar sucursales</div>
+          <div class="empty"><div class="empty-icon">📍</div>Activa el tracking para detectar sucursales</div>
         </div>
       </div>
 
@@ -59,7 +59,7 @@
         </button>
       </div>
       <div id="recentEvents">
-        <div class="empty"><div class="empty-icon">ðŸ—“</div>Sin eventos registrados</div>
+        <div class="empty"><div class="empty-icon">🗓</div>Sin eventos registrados</div>
       </div>
     </div>
 
@@ -73,7 +73,7 @@
         </button>
       </div>
       <div id="branchList">
-        <div class="empty"><div class="empty-icon">ðŸ¢</div>No hay sucursales. Agrega la primera.</div>
+        <div class="empty"><div class="empty-icon">🏢</div>No hay sucursales. Agrega la primera.</div>
       </div>
     </div>
 
@@ -82,13 +82,13 @@
       <div class="section-header">
         <div class="section-title">Historial</div>
         <select class="form-select" style="width:auto;padding:6px 10px;font-size:12px;" onchange="filterHistory(this.value)">
-          <option value="3">3 dÃ­as</option>
-          <option value="7" selected>7 dÃ­as</option>
-          <option value="30">30 dÃ­as</option>
+          <option value="3">3 días</option>
+          <option value="7" selected>7 días</option>
+          <option value="30">30 días</option>
         </select>
       </div>
       <div id="historyList">
-        <div class="empty"><div class="empty-icon">ðŸ“‹</div>Sin visitas registradas</div>
+        <div class="empty"><div class="empty-icon">📋</div>Sin visitas registradas</div>
       </div>
     </div>
 
@@ -98,11 +98,11 @@
         <div class="card-title">Generar Reporte</div>
         <div class="flex-col gap-8" style="gap:10px;">
           <div class="form-group">
-            <div class="form-label">PerÃ­odo</div>
+            <div class="form-label">Período</div>
             <select class="form-select" id="reportRange">
-              <option value="3">Ãšltimos 3 dÃ­as</option>
-              <option value="7" selected>Ãšltima semana</option>
-              <option value="30">Ãšltimo mes</option>
+              <option value="3">Últimos 3 días</option>
+              <option value="7" selected>Última semana</option>
+              <option value="30">Último mes</option>
             </select>
           </div>
           <div class="flex gap-8" style="gap:8px;">
@@ -136,10 +136,22 @@
     <!-- SETTINGS VIEW -->
     <div class="view" id="view-settings">
       <div class="card">
-        <div class="card-title">GeolocalizaciÃ³n</div>
+        <div class="card-title">Configuración Inicial</div>
+        <div class="form-group">
+          <div class="form-label">Nombre de Usuario</div>
+          <input type="text" class="form-input" id="settingUserName" placeholder="Ej: Juan Perez" onchange="saveSettings()">
+        </div>
+        <div class="form-group mt-8">
+          <div class="form-label">Placa del Vehículo</div>
+          <input type="text" class="form-input" id="settingVehiclePlate" placeholder="Ej: ABC123" onchange="saveSettings()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Geolocalización</div>
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">Tracking AutomÃ¡tico</div>
+            <div class="setting-name">Tracking Automático</div>
             <div class="setting-desc">Detecta entradas y salidas</div>
           </div>
           <label class="toggle"><input type="checkbox" id="settingTracking" onchange="saveSettings()"><div class="toggle-slider"></div></label>
@@ -160,7 +172,7 @@
         </div>
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">PrecisiÃ³n MÃ­nima</div>
+            <div class="setting-name">Precisión Mínima</div>
             <div class="setting-desc">Descartar lecturas imprecisas (m)</div>
           </div>
           <input type="number" class="form-input" id="settingMinAccuracy" value="50" style="width:80px;text-align:right;" onchange="saveSettings()">
@@ -171,8 +183,8 @@
         <div class="card-title">Reportes</div>
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">TelÃ©fono Contacto</div>
-            <div class="setting-desc">Para envÃ­o por WhatsApp</div>
+            <div class="setting-name">Teléfono Contacto</div>
+            <div class="setting-desc">Para envío por WhatsApp</div>
           </div>
         </div>
         <input type="tel" class="form-input" id="settingPhone" placeholder="+549..." onchange="saveSettings()">
@@ -197,30 +209,30 @@
       </div>
 
       <div style="text-align:center;color:var(--text3);font-size:11px;font-family:var(--mono);padding:8px 0;">
-        VisitControl v1.0 Â· Offline-first PWA
+        VisitControl v1.0 · Offline-first PWA
       </div>
     </div>
   </div>
 
   <!-- BOTTOM NAV -->
   <nav class="nav">
-    <button class="nav-item active" onclick="showView('dashboard', this)">
+    <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard', this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       Inicio
     </button>
-    <button class="nav-item" onclick="showView('branches', this)">
+    <button class="nav-item" data-view="branches" onclick="showView('branches', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Sucursales
     </button>
-    <button class="nav-item" onclick="showView('history', this)">
+    <button class="nav-item" data-view="history" onclick="showView('history', this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       Historial
     </button>
-    <button class="nav-item" onclick="showView('reports', this); buildReports()">
+    <button class="nav-item" data-view="reports" onclick="showView('reports', this); buildReports()">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Reportes
     </button>
-    <button class="nav-item" onclick="showView('settings', this); loadSettings()">
+    <button class="nav-item" data-view="settings" onclick="showView('settings', this); loadSettings()">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Config
     </button>
@@ -250,7 +262,7 @@
       </div>
       <button class="btn btn-ghost btn-sm" onclick="useCurrentLocation()">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/></svg>
-        Usar mi ubicaciÃ³n actual
+        Usar mi ubicación actual
       </button>
       <div class="form-grid">
         <div class="form-group">
@@ -286,8 +298,8 @@
       <div class="form-group">
         <div class="form-label">Tipo</div>
         <div class="form-row">
-          <button class="btn btn-success btn-sm" id="btnEntry" onclick="selectEventType('ENTRY')" style="flex:1">â–¶ Entrada</button>
-          <button class="btn btn-ghost btn-sm" id="btnExit" onclick="selectEventType('EXIT')" style="flex:1">â–  Salida</button>
+          <button class="btn btn-success btn-sm" id="btnEntry" onclick="selectEventType('ENTRY')" style="flex:1">▶ Entrada</button>
+          <button class="btn btn-ghost btn-sm" id="btnExit" onclick="selectEventType('EXIT')" style="flex:1">■ Salida</button>
         </div>
         <input type="hidden" id="manualEventType" value="ENTRY">
       </div>

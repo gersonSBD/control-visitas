@@ -4,6 +4,11 @@
 async function init() {
   await initDB();
   await loadSettings();
+  if (!isProfileConfigured()) {
+    const settingsBtn = document.querySelector('.nav-item[data-view="settings"]');
+    showView('settings', settingsBtn);
+    showToast('Completa nombre y placa en Config para comenzar', 'error');
+  }
   await renderDashboard();
   await renderBranches();
 }

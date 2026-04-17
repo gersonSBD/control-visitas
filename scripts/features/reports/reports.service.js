@@ -51,6 +51,8 @@ async function generateWhatsApp(preFiltered) {
   }
 
   const lines = ['📊 *Reporte de Visitas*'];
+  if (appSettings.userName) lines.push(`👤 Usuario: ${appSettings.userName}`);
+  if (appSettings.vehiclePlate) lines.push(`🚗 Placa: ${appSettings.vehiclePlate}`);
   lines.push(`📅 Periodo: ultimos ${days} dias`);
   lines.push(`🕐 Generado: ${formatDateTime(new Date().toISOString())}`);
   lines.push('');
