@@ -56,7 +56,7 @@ async function editBranch(id) {
   document.getElementById('branchEntryRadius').value = b.entryRadiusMeters;
   document.getElementById('branchExitRadius').value = b.exitRadiusMeters;
   document.getElementById('branchPriority').value = b.priority;
-  showModal('branchModal');
+  showModal('branchModal', { skipReset: true });
 }
 
 async function deleteBranch(id, name) {

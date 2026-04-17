@@ -18,9 +18,10 @@ function showView(name, btn) {
   if (name === 'branches') renderBranches();
 }
 
-function showModal(id) {
+function showModal(id, options = {}) {
+  const { skipReset = false } = options;
   if (id === 'manualEventModal') populateManualModal();
-  if (id === 'branchModal') resetBranchModal();
+  if (id === 'branchModal' && !skipReset) resetBranchModal();
   document.getElementById(id).classList.add('open');
 }
 

@@ -62,7 +62,7 @@ async function generateWhatsApp(preFiltered) {
   });
 
   const lines = ['📍 *Reporte de Visitas*'];
-  if (appSettings.userName) lines.push(`👤 Usuario: ${appSettings.userName}`);
+  if (appSettings.userName) lines.push(`👤 Conductor: ${appSettings.userName}`);
   if (appSettings.vehiclePlate) lines.push(`🚗 Placa: ${appSettings.vehiclePlate}`);
   lines.push(`📅 Rango: ${formatShortDate(cutoff.toISOString())} - ${formatShortDate(new Date().toISOString())}`);
   lines.push('');

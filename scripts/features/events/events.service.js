@@ -13,6 +13,7 @@ async function logEvent(branch, type, source, lat, lng, accuracy) {
   await updateSession(event, branch);
   renderRecentEvents();
   showToast(`${type === 'ENTRY' ? '▶ Entrada' : '■ Salida'}: ${branch.name}`, type === 'ENTRY' ? 'success' : '');
+  promptWhatsAppVisit(event, branch);
 }
 
 async function updateSession(event, branch) {
@@ -62,7 +63,44 @@ async function saveManualEvent() {
   await updateSession(event, branch);
   closeModal('manualEventModal');
   showToast('Evento manual registrado', 'success');
+  promptWhatsAppVisit(event, branch);
   renderDashboard();
+}
+
+function buildVisitWhatsAppMessage(event, branch) {
+  const dateText = formatDateTime(event.timestamp);
+  const eventTypeText = event.type === 'ENTRY' ? 'Entrada' : 'Salida';
+  const sourceText = event.source === 'AUTO' ? 'Automático' : 'Manual';
+  const lines = [
+    '📍 *Registro de visita*',
+    `Sucursal: ${branch?.name || event.branchNameSnapshot || '-'}`,
+    `Tipo: ${eventTypeText}`,
+    `Fecha: ${dateText}`,
+    `Origen: ${sourceText}`
+  ];
+
+  if (appSettings.userName) lines.push(`Usuario: ${appSettings.userName}`);
+  if (appSettings.vehiclePlate) lines.push(`Placa: ${appSettings.vehiclePlate}`);
+  if (event.observation) lines.push(`Observación: ${event.observation}`);
+  return lines.join('\n');
+}
+
+function openVisitWhatsApp(event, branch) {
+  const message = buildVisitWhatsAppMessage(event, branch);
+  const phone = appSettings.contactPhone?.replace(/\D/g, '') || '';
+  const text = encodeURIComponent(message);
+  const url = phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank');
+}
+
+function promptWhatsAppVisit(event, branch) {
+  const typeText = event.type === 'ENTRY' ? 'entrada' : 'salida';
+  const sourceText = event.source === 'AUTO' ? 'automática' : 'manual';
+  showConfirm(
+    'Enviar por WhatsApp',
+    `Se registró ${typeText} ${sourceText} en ${branch?.name || event.branchNameSnapshot}. ¿Deseas enviar el mensaje ahora?`,
+    () => openVisitWhatsApp(event, branch)
+  );
 }
 
 async function renderRecentEvents() {
